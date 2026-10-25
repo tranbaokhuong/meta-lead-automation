@@ -1,0 +1,1306 @@
+{
+  "name": "02 - Meta Messenger Intake",
+  "nodes": [
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "httpMethod": [
+          "POST",
+          "GET"
+        ],
+        "path": "meta-lead",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3488,
+        128
+      ],
+      "id": "d8e3a561-2edd-4d4c-8b98-eeabbab9a666",
+      "name": "Webhook - Nhận sự kiện Meta",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "YOUR_NOTION_DATABASE_ID",
+          "mode": "list",
+          "cachedResultName": "Meta Leads CRM",
+          "cachedResultUrl": "https://app.notion.com/p/YOUR_NOTION_DATABASE_ID"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Lead Key|rich_text",
+              "condition": "equals",
+              "richTextValue": "={{ $json.lead_key }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -2656,
+        16
+      ],
+      "id": "bd24683f-4370-4563-a497-995933de8227",
+      "name": "Notion - Tìm Lead theo Lead Key",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "YOUR_NOTION_DATABASE_ID",
+          "mode": "list",
+          "cachedResultName": "Meta Leads CRM",
+          "cachedResultUrl": "https://app.notion.com/p/YOUR_NOTION_DATABASE_ID"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Tên Lead|title",
+              "title": "={{ 'Khách Facebook ' + $('Code - Chuẩn hóa Meta Event').first().json.meta_user_id }}"
+            },
+            {
+              "key": "Lead Key|rich_text",
+              "textContent": "={{ $('Code - Chuẩn hóa Meta Event').first().json.lead_key }}"
+            },
+            {
+              "key": "Meta User ID|rich_text",
+              "textContent": "={{ $('Code - Chuẩn hóa Meta Event').first().json.meta_user_id }}"
+            },
+            {
+              "key": "Nguồn|select",
+              "selectValue": "={{ $('Code - Chuẩn hóa Meta Event').first().json.source }}"
+            },
+            {
+              "key": "Kênh tương tác|select",
+              "selectValue": "=Inbox"
+            },
+            {
+              "key": "Phân loại AI|select",
+              "selectValue": "=Chưa phân loại"
+            },
+            {
+              "key": "Mức độ nhu cầu|select",
+              "selectValue": "=Chưa xác định"
+            },
+            {
+              "key": "Điểm Lead|number"
+            },
+            {
+              "key": "Giai đoạn Sale|status",
+              "statusValue": "=Lead mới"
+            },
+            {
+              "key": "Bot tạm dừng?|checkbox"
+            },
+            {
+              "key": "Đã báo Sale?|checkbox"
+            },
+            {
+              "key": "Sale phụ trách|rich_text"
+            },
+            {
+              "key": "Nội dung gần nhất|rich_text",
+              "textContent": "={{ $('Code - Chuẩn hóa Meta Event').first().json.message_text }}"
+            },
+            {
+              "key": "Page / Account ID|rich_text",
+              "textContent": "={{ $('Code - Chuẩn hóa Meta Event').first().json.page_id }}"
+            },
+            {
+              "key": "Post ID|rich_text"
+            },
+            {
+              "key": "Lần tương tác cuối|date",
+              "date": "={{ $('Code - Chuẩn hóa Meta Event').first().json.timestamp }}"
+            },
+            {
+              "key": "Thời gian báo Sale|date"
+            },
+            {
+              "key": "Thời gian Sale nhận|date"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -2176,
+        144
+      ],
+      "id": "c248c1d4-6de9-4b19-973a-903bd0ee2199",
+      "name": "Notion - Tạo Lead mới"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Nội dung gần nhất|rich_text",
+              "textContent": "={{ $('Code - Chuẩn hóa Meta Event').first().json.message_text }}"
+            },
+            {
+              "key": "Lần tương tác cuối|date",
+              "date": "={{ $('Code - Chuẩn hóa Meta Event').first().json.timestamp }}"
+            },
+            {
+              "key": "Page / Account ID|rich_text",
+              "textContent": "={{ $('Code - Chuẩn hóa Meta Event').first().json.page_id }}"
+            },
+            {
+              "key": "Meta User ID|rich_text",
+              "textContent": "={{ $('Code - Chuẩn hóa Meta Event').first().json.meta_user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -2160,
+        -96
+      ],
+      "id": "ff9a6ee1-97f2-4842-a313-56841f92ecef",
+      "name": "Notion - Cập nhật Lead cũ"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 3,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "1bae1dc4-02b1-4327-9d12-b489b659ec7c",
+              "leftValue": "={{ $('NoOp - Gộp nhánh Lead').first().json.property_bot_t_m_d_ng ?? false }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -736,
+        16
+      ],
+      "id": "9415dd4d-8533-45dd-90db-fc59cae8327e",
+      "name": "IF - Bot đang tạm dừng?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "65c666aa-6f28-4864-b11b-27dc39f8e600",
+              "leftValue": "={{ Boolean($json.id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2448,
+        16
+      ],
+      "id": "bbedb8e9-3555-4664-98fd-a8100518a940",
+      "name": "IF - Lead đã tồn tại?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "==Bạn là AI trợ lý tư vấn của một đơn vị môi giới bất động sản. Nhiệm vụ của bạn là đọc tin nhắn của khách, phân loại, đánh giá nhu cầu và đưa ra câu trả lời tiếp theo.\n\n--- LỊCH SỬ VÀ NGỮ CẢNH (QUAN TRỌNG) ---\nTóm tắt nhu cầu trước đó của khách hàng (Nếu có):\n{{ $('NoOp - Gộp nhánh Lead').first().json.property_t_m_t_t_nhu_c_u || 'Khách hàng mới, chưa có thông tin.' }}\n\nTin nhắn khách vừa gửi (đã gộp nếu khách nhắn liên tục nhiều tin trong thời gian ngắn):\n{{ $('Code - Gộp buffer & tính timestamp').first().json.mergedBuffer }}\n\n--- QUY TẮC PHÂN LOẠI & ĐÁNH GIÁ ---\nHãy phân loại vào đúng một nhóm:\n- Hỏi giá\n- Hỏi dịch vụ\n- Cần tư vấn\n- Khiếu nại\n- Spam / Không phù hợp\n- Khác\n\nĐánh giá mức độ nhu cầu (intent_level):\n- Lạnh: chỉ chào hỏi hoặc hỏi thông tin chung, chưa nêu rõ khu vực/loại hình bất động sản quan tâm.\n- Ấm: đã hỏi giá, khu vực, loại hình (căn hộ/nhà phố/đất nền/mặt bằng cho thuê...) cụ thể nhưng chưa chốt nhu cầu xem thực tế hoặc giao dịch.\n- Nóng: muốn đặt lịch xem nhà/dự án thực tế, để lại số điện thoại, hỏi thủ tục pháp lý/hợp đồng cụ thể, hoặc có ý định mua/bán/thuê/ký gửi rõ ràng.\n\nQuy tắc chung:\n- Không tự bịa giá bán/giá thuê, tình trạng pháp lý, diện tích, chính sách hoa hồng hoặc tiến độ thanh toán nếu khách chưa cung cấp đủ thông tin cụ thể — luôn hỏi lại thông tin còn thiếu thay vì đoán.\n- Khách chỉ chào hỏi thì phân loại là Khác.\n- Tin quảng cáo, spam, nội dung không liên quan bất động sản thì phân loại Spam / Không phù hợp.\n\n--- QUY TẮC XÁC ĐỊNH needs_sale ---\n- Nếu khách chỉ hỏi giá chung một khu vực nhưng chưa nêu rõ loại hình, ngân sách hoặc diện tích thì: intent_level = Ấm, lead_score từ 45 đến 60, needs_sale = false.\n- CHỈ đặt needs_sale = true khi khách đã cung cấp thông tin tương đối cụ thể (khu vực, loại hình, ngân sách hoặc diện tích), muốn đặt lịch xem nhà/dự án, để lại số điện thoại, yêu cầu gặp nhân viên tư vấn trực tiếp, hoặc có khiếu nại.\n\n--- XỬ LÝ TIN NHẮN KHÔNG PHẢI VĂN BẢN ---\n- Nếu tin nhắn là \"[Khách gửi sticker]\": coi như phản ứng cảm xúc thân thiện, trả lời ngắn gọn tự nhiên, hỏi lại khách đang cần hỗ trợ gì, không cần phân tích sâu.\n- Nếu tin nhắn là \"[Khách gửi video]\", \"[Khách gửi tin nhắn thoại]\", \"[Khách gửi file đính kèm]\" hoặc \"[Khách gửi nội dung không phải văn bản]\": lịch sự cho khách biết mình chưa xem được nội dung này, xin khách mô tả ngắn gọn bằng chữ hoặc đợi nhân viên tư vấn xem trực tiếp.\n\n--- QUY TẮC VIẾT KẾT QUẢ OUTPUT ---\n1. reply_message: Bắt buộc dựa vào cả \"Tóm tắt nhu cầu trước đó\" và \"Tin nhắn khách vừa gửi\" để trả lời.\n- Nếu khách CHỈ CHÀO HỎI (chưa nêu nhu cầu): chào lại tự nhiên, hướng thẳng vào việc tìm hiểu nhu cầu bất động sản. TUYỆT ĐỐI KHÔNG dùng câu hỏi nước đôi hoặc liệt kê nhiều lựa chọn cùng lúc. Mẫu chuẩn: \"Chào anh/chị! Anh/chị đang quan tâm bất động sản ở khu vực nào ạ?\" hoặc \"Chào anh/chị! Mình có thể hỗ trợ tư vấn gì cho anh/chị về nhà đất ạ?\".\n- Nếu khách ĐÃ CÓ NHU CẦU: trả lời nối tiếp mạch chuyện, không hỏi lại thông tin đã có. Chỉ hỏi thêm ĐÚNG MỘT thông tin còn thiếu quan trọng nhất, theo thứ tự ưu tiên: khu vực → loại hình bất động sản → ngân sách → mục đích (ở thực/đầu tư/cho thuê lại). Câu văn phải tự nhiên như người thật, xưng hô \"anh/chị\" lịch sự.\n- Không tự chốt giá, pháp lý hay chiết khấu thay cho nhân viên Sale — nếu khách hỏi sâu về những nội dung này, ghi nhận và hẹn nhân viên tư vấn liên hệ cụ thể hơn.\n2. summary: BẮT BUỘC phải GỘP (merge) thông tin từ \"Tóm tắt nhu cầu trước đó\" cùng với chi tiết mới trong tin nhắn khách vừa gửi. Đây là trí nhớ của bạn, nếu không gộp đủ chi tiết, bạn sẽ quên ở lần chat sau.\n3. Chỉ trả dữ liệu theo đúng cấu trúc JSON, không thêm giải thích bên ngoài.",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        400,
+        256
+      ],
+      "id": "27c98380-74c9-4ea7-ad68-16741dfc019d",
+      "name": "AI - Phân loại Lead Meta",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-flash-lite-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        400,
+        80
+      ],
+      "id": "3cdf44ce-1ca8-491b-82b8-99f5c5befe31",
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"category\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"Hỏi giá\",\n        \"Hỏi dịch vụ\",\n        \"Cần tư vấn\",\n        \"Khiếu nại\",\n        \"Spam / Không phù hợp\",\n        \"Khác\"\n      ]\n    },\n    \"intent_level\": {\n      \"type\": \"string\",\n      \"enum\": [\"Lạnh\", \"Ấm\", \"Nóng\"]\n    },\n    \"lead_score\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 100\n    },\n    \"needs_sale\": {\n      \"type\": \"boolean\"\n    },\n    \"summary\": {\n      \"type\": \"string\"\n    },\n    \"reply_message\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"category\",\n    \"intent_level\",\n    \"lead_score\",\n    \"needs_sale\",\n    \"summary\",\n    \"reply_message\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        -16
+      ],
+      "id": "b172e9a5-9905-4ae8-b733-9d05330ba1e0",
+      "name": "Parser - Kết quả phân loại Lead"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('IF - Bot đang tạm dừng?').first().json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Phân loại AI|select",
+              "selectValue": "={{ $json.output.category }}"
+            },
+            {
+              "key": "Mức độ nhu cầu|select",
+              "selectValue": "={{ $json.output.intent_level }}"
+            },
+            {
+              "key": "Điểm Lead|number",
+              "numberValue": "={{ $json.output.lead_score }}"
+            },
+            {
+              "key": "Tóm tắt nhu cầu|rich_text",
+              "textContent": "={{ $json.output.summary }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        16
+      ],
+      "id": "db3a3546-54a0-47d2-a005-118bc06a5d43",
+      "name": "Notion - Cập nhật kết quả AI"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{\n  'https://graph.facebook.com/v25.0/'\n  + $('Code - Chuẩn hóa Meta Event').first().json.page_id\n  + '/messages'\n}}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    recipient: {\n      id: $('Code - Chuẩn hóa Meta Event')\n        .first()\n        .json\n        .meta_user_id\n    },\n    messaging_type: 'RESPONSE',\n    message: {\n      text: $('AI - Phân loại Lead Meta')\n        .first()\n        .json\n        .output\n        .reply_message\n    }\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1568,
+        224
+      ],
+      "id": "f95f9745-c038-491b-9ebc-e4cf58b90139",
+      "name": "HTTP - Trả lời Facebook Messenger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bafd37e6-ed96-4a95-8ba9-2cda06e0c529",
+              "leftValue": "={{ $('AI - Phân loại Lead Meta').first().json.output.needs_sale }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1200,
+        16
+      ],
+      "id": "39bc9053-72c8-4a43-af68-ba7f14fdedbb",
+      "name": "IF - Có cần chuyển Sale?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 3,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "2e6b20c7-6ae7-4e36-8a48-8641f145b0cc",
+              "leftValue": "={{ $('NoOp - Gộp nhánh Lead').first().json.property_b_o_sale ?? false }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1616,
+        -192
+      ],
+      "id": "e712af59-5395-4dbb-bc00-a859468d1381",
+      "name": "IF - Đã báo Sale?"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('IF - Bot đang tạm dừng?').first().json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Giai đoạn Sale|status",
+              "statusValue": "Chờ Sale nhận"
+            },
+            {
+              "key": "Đã báo Sale?|checkbox",
+              "checkboxValue": true
+            },
+            {
+              "key": "Thời gian báo Sale|date",
+              "date": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        2096,
+        -176
+      ],
+      "id": "f737155e-ffe3-4ef7-bc26-b1e68c417d12",
+      "name": "Notion - Đánh dấu đã báo Sale"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{\n`🔥 LEAD FACEBOOK MỚI\n\nNguồn: Facebook Messenger\nTên Lead: ${$('NoOp - Gộp nhánh Lead').first().json.name}\nMeta User ID: ${$('Code - Chuẩn hóa Meta Event').first().json.meta_user_id}\n\nPhân loại: ${$('AI - Phân loại Lead Meta').first().json.output.category}\nMức độ nhu cầu: ${$('AI - Phân loại Lead Meta').first().json.output.intent_level}\nĐiểm Lead: ${$('AI - Phân loại Lead Meta').first().json.output.lead_score}/100\n\nNội dung khách:\n${$('Code - Chuẩn hóa Meta Event').first().json.message_text}\n\nTóm tắt AI:\n${$('AI - Phân loại Lead Meta').first().json.output.summary}\n\nTrạng thái: Chờ Sale nhận`\n}}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Nhận lead",
+                    "additionalFields": {
+                      "callback_data": "={{\n  'claim|'\n  + $('Notion - Cập nhật kết quả AI').first().json.id\n}}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1872,
+        -176
+      ],
+      "id": "82f7e3a5-1df8-460d-9699-fa5532b16b28",
+      "name": "Telegram - Báo Lead mới"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Chuyển thời gian từ Meta về định dạng ISO để lưu vào Notion.\nfunction toIsoDate(value, fallback = Date.now()) {\n  if (value !== undefined && value !== null && value !== '') {\n    const numericValue = Number(value);\n\n    if (Number.isFinite(numericValue)) {\n      // Meta có thể gửi Unix timestamp theo giây hoặc mili-giây.\n      const milliseconds =\n        numericValue < 1_000_000_000_000\n          ? numericValue * 1000\n          : numericValue;\n\n      return new Date(milliseconds).toISOString();\n    }\n\n    const parsedDate = new Date(value);\n\n    if (!Number.isNaN(parsedDate.getTime())) {\n      return parsedDate.toISOString();\n    }\n  }\n\n  return new Date(fallback).toISOString();\n}\n\nconst results = [];\n\n// Đọc toàn bộ item đi vào Code node.\nfor (const inputItem of $input.all()) {\n  const body = inputItem.json.body ?? inputItem.json;\n\n  const entries = Array.isArray(body.entry)\n    ? body.entry\n    : [];\n\n  for (const entry of entries) {\n    const pageId = String(entry.id ?? '');\n    const entryTime = entry.time ?? Date.now();\n\n    /*\n     * PHẦN 1: FACEBOOK MESSENGER INBOX\n     */\n    const messagingEvents = Array.isArray(entry.messaging)\n      ? entry.messaging\n      : [];\n\n    for (const event of messagingEvents) {\n      const message = event.message ?? {};\n\n      // Bỏ tin nhắn do chính Page hoặc bot gửi ra.\n      if (message.is_echo === true) {\n        continue;\n      }\n\n      // Xác định nội dung tin nhắn: chữ, sticker, ảnh, video, audio hoặc file.\n      let messageText = '';\n      let imageUrl = '';\n\n      if (message.text) {\n        messageText = String(message.text).trim();\n      } else if (Array.isArray(message.attachments) && message.attachments.length > 0) {\n        const attachment = message.attachments[0];\n        const isSticker = Boolean(attachment.payload?.sticker_id);\n\n        if (isSticker) {\n          messageText = '[Khách gửi sticker]';\n        } else if (attachment.type === 'image') {\n          messageText = '[Khách gửi hình ảnh]';\n          imageUrl = attachment.payload?.url ?? '';\n        } else if (attachment.type === 'video') {\n          messageText = '[Khách gửi video]';\n        } else if (attachment.type === 'audio') {\n          messageText = '[Khách gửi tin nhắn thoại]';\n        } else if (attachment.type === 'file') {\n          messageText = '[Khách gửi file đính kèm]';\n        } else {\n          messageText = '[Khách gửi nội dung không phải văn bản]';\n        }\n      } else {\n        // Không có chữ lẫn tệp đính kèm (vd: quick reply, postback...) - bỏ qua.\n        continue;\n      }\n\n      const senderId = String(event.sender?.id ?? '');\n\n      const recipientPageId = String(\n        event.recipient?.id ??\n        pageId\n      );\n\n      if (!senderId) {\n        continue;\n      }\n\n      const timestamp = toIsoDate(\n        event.timestamp,\n        entryTime\n      );\n\n      const messageId = String(\n        message.mid ??\n        `message:${senderId}:${event.timestamp ?? entryTime}`\n      );\n\n      results.push({\n        json: {\n          source: 'Facebook',\n          interaction_type: 'Inbox',\n          event_type: 'message',\n\n          meta_user_id: senderId,\n          customer_name: '',\n\n          page_id: recipientPageId,\n          post_id: '',\n          parent_id: '',\n\n          message_id: messageId,\n          message_text: messageText,\n          image_url: imageUrl,\n\n          timestamp,\n\n          lead_key: `facebook:inbox:${senderId}`,\n        },\n      });\n    }\n\n    /*\n     * PHẦN 2: BÍNH LUẬN FACEBOOK PAGE\n     */\n    const changes = Array.isArray(entry.changes)\n      ? entry.changes\n      : [];\n\n    for (const change of changes) {\n      const field = change.field ?? '';\n      const value = change.value ?? {};\n\n      const isNewComment =\n        field === 'feed' &&\n        value.item === 'comment' &&\n        value.verb === 'add';\n\n      if (!isNewComment) {\n        continue;\n      }\n\n      const senderId = String(\n        value.from?.id ?? ''\n      );\n\n      const senderName = String(\n        value.from?.name ?? ''\n      );\n\n      const commentText = String(\n        value.message ?? ''\n      ).trim();\n\n      // Không có người gửi hoặc không có nội dung thì bỏ qua.\n      if (!senderId || !commentText) {\n        continue;\n      }\n\n      // Bỏ bình luận do chính Page đăng để tránh bot xử lý lại.\n      if (senderId === pageId) {\n        continue;\n      }\n\n      const commentId = String(\n        value.comment_id ??\n        value.id ??\n        `comment:${senderId}:${entryTime}`\n      );\n\n      const postId = String(\n        value.post_id ?? ''\n      );\n\n      const parentId = String(\n        value.parent_id ?? ''\n      );\n\n      results.push({\n        json: {\n          source: 'Facebook',\n          interaction_type: 'Comment',\n          event_type: 'comment',\n\n          meta_user_id: senderId,\n          customer_name: senderName,\n\n          page_id: pageId,\n          post_id: postId,\n          parent_id: parentId,\n\n          message_id: commentId,\n          message_text: commentText,\n\n          timestamp: toIsoDate(\n            value.created_time,\n            entryTime\n          ),\n\n          lead_key: `facebook:comment:${senderId}`,\n        },\n      });\n    }\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3168,
+        16
+      ],
+      "id": "0733a20d-3936-4d16-9b73-28db33d88816",
+      "name": "Code - Chuẩn hóa Meta Event",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.interaction_type }}",
+                    "rightValue": "Inbox",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "871f956a-2396-4bd3-a58b-c43476fdd6ce"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b4f7efc7-0bec-4ee3-80bf-97e128ec9e3f",
+                    "leftValue": "={{ $json.interaction_type }}",
+                    "rightValue": "Comment",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -2928,
+        16
+      ],
+      "id": "9c0eb244-6e35-4c26-a46a-e91b32b76ce2",
+      "name": "Switch - Phân luồng Inbox và Comment"
+    },
+    {
+      "parameters": {
+        "enableResponseOutput": true,
+        "respondWith": "text",
+        "responseBody": "={{ $('Webhook - Nhận sự kiện Meta').item.json.query['hub.challenge'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -2880,
+        496
+      ],
+      "id": "0ac05fd7-d5e5-466b-8701-1272ddef6760",
+      "name": "Phản hồi challenge"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1a7143d4-8d6d-4db8-8074-d573e3f6be34",
+              "leftValue": "={{ $json.query['hub.mode'] }}",
+              "rightValue": "subscribe",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "4d1046c7-851b-43a2-889f-0d88ae9305a5",
+              "leftValue": "={{ $json.query['hub.verify_token'] }}",
+              "rightValue": "YOUR_VERIFY_TOKEN",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -3168,
+        512
+      ],
+      "id": "10e1e53e-3f76-4e91-8fdc-fb5359ed6782",
+      "name": "Xác Thực Webhook",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "id": "noop-merge-lead",
+      "name": "NoOp - Gộp nhánh Lead",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1904,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://api.notion.com/v1/pages/' + $json.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-read-buffer-initial",
+      "name": "HTTP - Đọc trang Lead (buffer)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1680,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const page = $input.first().json;\nconst props = page.properties || {};\nconst oldBuffer = props['Bộ đệm tin nhắn']?.rich_text?.[0]?.plain_text || '';\nconst oldImageUrl = props['URL ảnh gần nhất\\t']?.rich_text?.[0]?.plain_text || '';\nconst lastMidsRaw = props['Mid tin nhắn cuối']?.rich_text?.[0]?.plain_text || '';\nconst lastMids = lastMidsRaw ? lastMidsRaw.split('\\n').filter(Boolean) : [];\nconst currentMid = $('Code - Chuẩn hóa Meta Event').first().json.message_id;\nconst newMessage = $('Code - Chuẩn hóa Meta Event').first().json.message_text;\nconst newImageUrl = $('Code - Chuẩn hóa Meta Event').first().json.image_url || '';\n\nconst isDuplicate = lastMids.includes(currentMid);\n\nconst mergedBuffer = isDuplicate\n  ? oldBuffer\n  : (oldBuffer ? `${oldBuffer}\\n${newMessage}` : newMessage);\nconst mergedImageUrl = newImageUrl || oldImageUrl;\nconst updatedMids = isDuplicate ? lastMids : [...lastMids, currentMid].slice(-20);\n\nreturn [{\n  json: {\n    pageId: page.id,\n    mergedBuffer,\n    imageUrl: mergedImageUrl,\n    ts: new Date().toISOString(),\n    isDuplicate,\n    midList: updatedMids.join('\\n'),\n  },\n}];"
+      },
+      "id": "code-merge-buffer",
+      "name": "Code - Gộp buffer & tính timestamp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1456,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://api.notion.com/v1/pages/' + $json.pageId }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    properties: {\n      'Bộ đệm tin nhắn': { rich_text: [ { text: { content: $json.mergedBuffer } } ] },\n      'Dấu thời gian bộ đệm': { rich_text: [ { text: { content: $json.ts } } ] },\n      'URL ảnh gần nhất\\t': { rich_text: [ { text: { content: $json.imageUrl } } ] },\n      'Mid tin nhắn cuối': { rich_text: [ { text: { content: $json.midList } } ] }\n    }\n  }\n}}",
+        "options": {}
+      },
+      "id": "http-write-buffer",
+      "name": "HTTP - Ghi buffer mới",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -944,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 25
+      },
+      "id": "wait-debounce",
+      "name": "Wait - Debounce 25 giây",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -480,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://api.notion.com/v1/pages/' + $('Code - Gộp buffer & tính timestamp').first().json.pageId }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-read-buffer-recheck",
+      "name": "HTTP - Đọc lại buffer sau chờ",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -272,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 3,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-is-last-message",
+              "leftValue": "={{ $json.properties['Dấu thời gian bộ đệm'].rich_text[0]?.plain_text }}",
+              "rightValue": "={{ $('Code - Gộp buffer & tính timestamp').first().json.ts }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-last-message",
+      "name": "IF - Là tin nhắn cuối cùng?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -64,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://api.notion.com/v1/pages/' + $('Code - Gộp buffer & tính timestamp').first().json.pageId }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    properties: {\n      'Bộ đệm tin nhắn': { rich_text: [] },\n      'URL ảnh gần nhất\\t': { rich_text: [] }\n    }\n  }\n}}",
+        "options": {}
+      },
+      "id": "http-clear-buffer",
+      "name": "HTTP - Xoá buffer sau xử lý",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1024,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "EVENT_RECEIVED",
+        "options": {}
+      },
+      "id": "respond-ack-fast",
+      "name": "Phản hồi ngay cho Meta (ACK nhanh)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -3168,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 3,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-has-image",
+              "leftValue": "={{ $('Code - Gộp buffer & tính timestamp').first().json.imageUrl }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-has-image",
+      "name": "IF - Có ảnh trong buffer?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        160,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "==Bạn là AI trợ lý tư vấn của một đơn vị môi giới bất động sản. Nhiệm vụ của bạn là đọc tin nhắn của khách (kể cả hình ảnh đính kèm nếu có), phân loại, đánh giá nhu cầu và đưa ra câu trả lời tiếp theo.\n\n--- LỊCH SỬ VÀ NGỮ CẢNH (QUAN TRỌNG) ---\nTóm tắt nhu cầu trước đó của khách hàng (Nếu có):\n{{ $('NoOp - Gộp nhánh Lead').first().json.property_t_m_t_t_nhu_c_u || 'Khách hàng mới, chưa có thông tin.' }}\n\nTin nhắn khách vừa gửi (đã gộp nếu khách nhắn liên tục nhiều tin trong thời gian ngắn):\n{{ $('Code - Gộp buffer & tính timestamp').first().json.mergedBuffer }}\n\n--- QUY TẮC PHÂN LOẠI & ĐÁNH GIÁ ---\nHãy phân loại vào đúng một nhóm:\n- Hỏi giá\n- Hỏi dịch vụ\n- Cần tư vấn\n- Khiếu nại\n- Spam / Không phù hợp\n- Khác\n\nĐánh giá mức độ nhu cầu (intent_level):\n- Lạnh: chỉ chào hỏi hoặc hỏi thông tin chung, chưa nêu rõ khu vực/loại hình bất động sản quan tâm.\n- Ấm: đã hỏi giá, khu vực, loại hình (căn hộ/nhà phố/đất nền/mặt bằng cho thuê...) cụ thể nhưng chưa chốt nhu cầu xem thực tế hoặc giao dịch.\n- Nóng: muốn đặt lịch xem nhà/dự án thực tế, để lại số điện thoại, hỏi thủ tục pháp lý/hợp đồng cụ thể, hoặc có ý định mua/bán/thuê/ký gửi rõ ràng.\n\nQuy tắc chung:\n- Không tự bịa giá bán/giá thuê, tình trạng pháp lý, diện tích, chính sách hoa hồng hoặc tiến độ thanh toán nếu khách chưa cung cấp đủ thông tin cụ thể — luôn hỏi lại thông tin còn thiếu thay vì đoán.\n- Khách chỉ chào hỏi thì phân loại là Khác.\n- Tin quảng cáo, spam, nội dung không liên quan bất động sản thì phân loại Spam / Không phù hợp.\n\n--- QUY TẮC XÁC ĐỊNH needs_sale ---\n- Nếu khách chỉ hỏi giá chung một khu vực nhưng chưa nêu rõ loại hình, ngân sách hoặc diện tích thì: intent_level = Ấm, lead_score từ 45 đến 60, needs_sale = false.\n- CHỈ đặt needs_sale = true khi khách đã cung cấp thông tin tương đối cụ thể (khu vực, loại hình, ngân sách hoặc diện tích), muốn đặt lịch xem nhà/dự án, để lại số điện thoại, yêu cầu gặp nhân viên tư vấn trực tiếp, hoặc có khiếu nại.\n\n--- XỬ LÝ TIN NHẮN KHÔNG PHẢI VĂN BẢN ---\n- Nếu tin nhắn là \"[Khách gửi sticker]\": coi như phản ứng cảm xúc thân thiện, trả lời ngắn gọn tự nhiên, hỏi lại khách đang cần hỗ trợ gì, không cần phân tích sâu.\n- Nếu tin nhắn là \"[Khách gửi video]\", \"[Khách gửi tin nhắn thoại]\", \"[Khách gửi file đính kèm]\" hoặc \"[Khách gửi nội dung không phải văn bản]\": lịch sự cho khách biết mình chưa xem được nội dung này, xin khách mô tả ngắn gọn bằng chữ hoặc đợi nhân viên tư vấn xem trực tiếp.\n- Nếu tin nhắn là \"[Khách gửi hình ảnh]\": hình ảnh thật đã được đính kèm vào cuộc trò chuyện này — hãy QUAN SÁT kỹ hình ảnh để hiểu khách đang hỏi về loại bất động sản nào (nhà phố, căn hộ, đất nền, bản vẽ, mặt bằng...) hoặc nội dung liên quan, và trả lời dựa trên những gì thấy được trong ảnh kết hợp với tin nhắn chữ đi kèm (nếu có). Không tự bịa chi tiết ảnh không thể hiện rõ.\n\n--- QUY TẮC VIẾT KẾT QUẢ OUTPUT ---\n1. reply_message: Bắt buộc dựa vào cả \"Tóm tắt nhu cầu trước đó\" và \"Tin nhắn khách vừa gửi\" để trả lời.\n- Nếu khách CHỈ CHÀO HỎI (chưa nêu nhu cầu): chào lại tự nhiên, hướng thẳng vào việc tìm hiểu nhu cầu bất động sản. TUYỆT ĐỐI KHÔNG dùng câu hỏi nước đôi hoặc liệt kê nhiều lựa chọn cùng lúc. Mẫu chuẩn: \"Chào anh/chị! Anh/chị đang quan tâm bất động sản ở khu vực nào ạ?\" hoặc \"Chào anh/chị! Mình có thể hỗ trợ tư vấn gì cho anh/chị về nhà đất ạ?\".\n- Nếu khách ĐÃ CÓ NHU CẦU: trả lời nối tiếp mạch chuyện, không hỏi lại thông tin đã có. Chỉ hỏi thêm ĐÚNG MỘT thông tin còn thiếu quan trọng nhất, theo thứ tự ưu tiên: khu vực → loại hình bất động sản → ngân sách → mục đích (ở thực/đầu tư/cho thuê lại). Câu văn phải tự nhiên như người thật, xưng hô \"anh/chị\" lịch sự.\n- Không tự chốt giá, pháp lý hay chiết khấu thay cho nhân viên Sale — nếu khách hỏi sâu về những nội dung này, ghi nhận và hẹn nhân viên tư vấn liên hệ cụ thể hơn.\n2. summary: BẮT BUỘC phải GỘP (merge) thông tin từ \"Tóm tắt nhu cầu trước đó\" cùng với chi tiết mới trong tin nhắn khách vừa gửi. Đây là trí nhớ của bạn, nếu không gộp đủ chi tiết, bạn sẽ quên ở lần chat sau.\n3. Chỉ trả dữ liệu theo đúng cấu trúc JSON, không thêm giải thích bên ngoài.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "messageType": "imageUrl",
+              "imageUrl": "={{ $('Code - Gộp buffer & tính timestamp').first().json.imageUrl }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "ai-vision-classify",
+      "name": "AI - Phân loại Lead Meta (có ảnh)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        400,
+        -288
+      ],
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 3,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-dup-mid-v2",
+              "leftValue": "={{ $json.isDuplicate }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-duplicate-mid-v2",
+      "name": "IF - Tin nhắn trùng lặp?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1216,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "gemini-vision-model",
+      "name": "Google Gemini Chat Model (Vision)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -128
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook - Nhận sự kiện Meta": {
+      "main": [
+        [
+          {
+            "node": "Code - Chuẩn hóa Meta Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Xác Thực Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion - Tìm Lead theo Lead Key": {
+      "main": [
+        [
+          {
+            "node": "IF - Lead đã tồn tại?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Lead đã tồn tại?": {
+      "main": [
+        [
+          {
+            "node": "Notion - Cập nhật Lead cũ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notion - Tạo Lead mới",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI - Phân loại Lead Meta",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser - Kết quả phân loại Lead": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI - Phân loại Lead Meta",
+            "type": "ai_outputParser",
+            "index": 0
+          },
+          {
+            "node": "AI - Phân loại Lead Meta (có ảnh)",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI - Phân loại Lead Meta": {
+      "main": [
+        [
+          {
+            "node": "Notion - Cập nhật kết quả AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Có cần chuyển Sale?": {
+      "main": [
+        [
+          {
+            "node": "IF - Đã báo Sale?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP - Trả lời Facebook Messenger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Đã báo Sale?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Telegram - Báo Lead mới",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Báo Lead mới": {
+      "main": [
+        [
+          {
+            "node": "Notion - Đánh dấu đã báo Sale",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Chuẩn hóa Meta Event": {
+      "main": [
+        [
+          {
+            "node": "Switch - Phân luồng Inbox và Comment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - Phân luồng Inbox và Comment": {
+      "main": [
+        [
+          {
+            "node": "Notion - Tìm Lead theo Lead Key",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Phản hồi ngay cho Meta (ACK nhanh)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Phản hồi ngay cho Meta (ACK nhanh)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Xác Thực Webhook": {
+      "main": [
+        [
+          {
+            "node": "Phản hồi challenge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion - Tạo Lead mới": {
+      "main": [
+        [
+          {
+            "node": "NoOp - Gộp nhánh Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion - Cập nhật Lead cũ": {
+      "main": [
+        [
+          {
+            "node": "NoOp - Gộp nhánh Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NoOp - Gộp nhánh Lead": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Đọc trang Lead (buffer)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Đọc trang Lead (buffer)": {
+      "main": [
+        [
+          {
+            "node": "Code - Gộp buffer & tính timestamp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Bot đang tạm dừng?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait - Debounce 25 giây",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait - Debounce 25 giây": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Đọc lại buffer sau chờ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Đọc lại buffer sau chờ": {
+      "main": [
+        [
+          {
+            "node": "IF - Là tin nhắn cuối cùng?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion - Cập nhật kết quả AI": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Xoá buffer sau xử lý",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Xoá buffer sau xử lý": {
+      "main": [
+        [
+          {
+            "node": "IF - Có cần chuyển Sale?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Ghi buffer mới": {
+      "main": [
+        [
+          {
+            "node": "IF - Bot đang tạm dừng?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Là tin nhắn cuối cùng?": {
+      "main": [
+        [
+          {
+            "node": "IF - Có ảnh trong buffer?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Có ảnh trong buffer?": {
+      "main": [
+        [
+          {
+            "node": "AI - Phân loại Lead Meta (có ảnh)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI - Phân loại Lead Meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI - Phân loại Lead Meta (có ảnh)": {
+      "main": [
+        [
+          {
+            "node": "Notion - Cập nhật kết quả AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Gộp buffer & tính timestamp": {
+      "main": [
+        [
+          {
+            "node": "IF - Tin nhắn trùng lặp?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Tin nhắn trùng lặp?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP - Ghi buffer mới",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model (Vision)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI - Phân loại Lead Meta (có ảnh)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "tags": []
+}

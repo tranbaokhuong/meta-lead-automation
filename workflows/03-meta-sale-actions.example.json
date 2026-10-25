@@ -1,0 +1,182 @@
+{
+  "name": "03 - Meta Sale Actions",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        0
+      ],
+      "id": "435c7b02-9902-4f2b-95de-b0ff4e5627ef",
+      "name": "Telegram Trigger"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Code - Tách hành động Sale').first().json.notion_page_id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Giai đoạn Sale|status",
+              "statusValue": "=Sale đã nhận"
+            },
+            {
+              "key": "Sale phụ trách|rich_text",
+              "textContent": "={{ $json.sale_name }}"
+            },
+            {
+              "key": "Thời gian Sale nhận|date",
+              "date": "={{ $now.toISO() }}"
+            },
+            {
+              "key": "Bot tạm dừng?|checkbox",
+              "checkboxValue": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -32,
+        0
+      ],
+      "id": "5a5b9f0b-e03b-4e94-b310-8b791c0c1a3a",
+      "name": "Notion - Sale nhận Lead"
+    },
+    {
+      "parameters": {
+        "resource": "callback",
+        "queryId": "={{ $('Code - Tách hành động Sale').first().json.callback_query_id }}",
+        "additionalFields": {
+          "show_alert": false,
+          "text": "✅ Bạn đã nhận lead. Bot Facebook đã tạm dừng."
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        176,
+        0
+      ],
+      "id": "31c2e7d8-c3a3-4ee2-9f32-f3dca783181c",
+      "name": "Telegram - Xác nhận nhận Lead"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Lấy callback_data từ Telegram Trigger.\n// Tùy phiên bản n8n, dữ liệu có thể nằm trực tiếp trong $json\n// hoặc nằm bên trong $json.callback_query.\nconst callbackData =\n  $json.data ??\n  $json.callback_query?.data ??\n  '';\n\n// Callback data dự kiến:\n// claim|NOTION_PAGE_ID\nconst [action, notionPageId] = callbackData.split('|');\n\n// Nếu callback không đúng cấu trúc thì dừng workflow và báo lỗi.\nif (!action || !notionPageId) {\n  throw new Error(`Callback data không hợp lệ: ${callbackData}`);\n}\n\n// Lấy thông tin người đã bấm nút.\nconst callbackFrom =\n  $json.from ??\n  $json.callback_query?.from ??\n  {};\n\n// Lấy thông tin tin nhắn Telegram chứa nút \"Nhận lead\".\nconst callbackMessage =\n  $json.message ??\n  $json.callback_query?.message ??\n  {};\n\n// Ưu tiên username.\n// Nếu không có username thì dùng họ tên Telegram.\nconst fullName = [\n  callbackFrom.first_name,\n  callbackFrom.last_name,\n]\n  .filter(Boolean)\n  .join(' ')\n  .trim();\n\nconst saleName =\n  callbackFrom.username\n    ? `@${callbackFrom.username}`\n    : fullName || 'Sale';\n\n// Trả dữ liệu sạch cho các node phía sau.\nreturn {\n  action: action,\n\n  notion_page_id: notionPageId,\n\n  sale_telegram_id: String(\n    callbackFrom.id ?? ''\n  ),\n\n  sale_name: saleName,\n\n  callback_query_id:\n    $json.id ??\n    $json.callback_query?.id ??\n    '',\n\n  telegram_chat_id:\n    callbackMessage.chat?.id ??\n    '',\n\n  telegram_message_id:\n    callbackMessage.message_id ??\n    '',\n\n  original_message_text:\n    callbackMessage.text ??\n    callbackMessage.caption ??\n    '',\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        0
+      ],
+      "id": "b93e42fe-7c89-4b3a-83a9-e564ac4d9497",
+      "name": "Code - Tách hành động Sale"
+    },
+    {
+      "parameters": {
+        "operation": "editMessageText",
+        "chatId": "={{ $('Code - Tách hành động Sale').first().json.telegram_chat_id }}",
+        "messageId": "={{ $('Code - Tách hành động Sale').first().json.telegram_message_id }}",
+        "replyMarkup": "inlineKeyboard",
+        "text": "={{\n`${$('Code - Tách hành động Sale').first().json.original_message_text}\n\n━━━━━━━━━━━━━━━━━━\n✅ LEAD ĐÃ ĐƯỢC NHẬN\n👤 Sale phụ trách: ${$('Code - Tách hành động Sale').first().json.sale_name}\n🤖 Bot Facebook: Đã tạm dừng\n🕒 Thời gian nhận: ${$now.toFormat('dd/MM/yyyy HH:mm')}`\n}}",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "💬 Chat với khách hàng",
+                    "additionalFields": {
+                      "url": "={{ 'https://business.facebook.com/latest/inbox/all?asset_id=YOUR_META_ASSET_ID&selected_item_id=' + $('Notion - Sale nhận Lead').first().json.property_meta_user_id }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        384,
+        0
+      ],
+      "id": "df1585d6-2fef-4ce2-8301-fdb62117e594",
+      "name": "Telegram - Cập nhật thông báo Lead"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code - Tách hành động Sale",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion - Sale nhận Lead": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Xác nhận nhận Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Tách hành động Sale": {
+      "main": [
+        [
+          {
+            "node": "Notion - Sale nhận Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Xác nhận nhận Lead": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Cập nhật thông báo Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "tags": []
+}

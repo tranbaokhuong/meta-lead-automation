@@ -1,0 +1,460 @@
+{
+  "name": "04 - Meta Comment Polling",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -896,
+        -80
+      ],
+      "id": "ee7400c9-c687-4fe0-ab3a-c9c81d1edffd",
+      "name": "Schedule - Quét comment mỗi phút"
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v25.0/YOUR_PAGE_ID/published_posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "id,message,created_time,comments.limit(50){id,message,from,created_time}"
+            },
+            {
+              "name": "limit",
+              "value": "10"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -640,
+        -80
+      ],
+      "id": "84d73ddb-ebfa-42fe-8cab-1381b5a9297d",
+      "name": "HTTP - Lấy bài viết và comment"
+    },
+    {
+      "parameters": {
+        "jsCode": "const pageId = 'YOUR_PAGE_ID';\n\nconst response = $input.first().json;\n\nconst posts = Array.isArray(response.data)\n  ? response.data\n  : [];\n\nconst results = [];\n\nfor (const post of posts) {\n  const comments = Array.isArray(post.comments?.data)\n    ? post.comments.data\n    : [];\n\n  for (const comment of comments) {\n    const commentId = String(comment.id ?? '');\n\n    const commentText = String(\n      comment.message ?? ''\n    ).trim();\n\n    if (!commentId || !commentText) {\n      continue;\n    }\n\n    const metaUserId = String(\n      comment.from?.id ?? ''\n    );\n\n    const customerName = String(\n      comment.from?.name ?? 'Khách Facebook'\n    );\n\n    // Bỏ comment do chính Page đăng.\n    if (metaUserId === pageId) {\n      continue;\n    }\n\n    results.push({\n  json: {\n    source: 'Facebook',\n    interaction_type: 'Comment',\n    event_type: 'comment',\n\n    page_id: pageId,\n    post_id: String(post.id ?? ''),\n    post_message: String(post.message ?? ''),\n\n    message_id: commentId,\n    message_text: commentText,\n\n    meta_user_id: metaUserId,\n    customer_name: customerName,\n\n    timestamp:\n      comment.created_time ??\n      new Date().toISOString(),\n\n    lead_key: metaUserId\n      ? `facebook:comment:${metaUserId}`\n      : `facebook:comment-id:${commentId}`,\n\n    has_user_info: Boolean(metaUserId),\n  },\n\n  pairedItem: {\n    item: 0,\n  },\n});\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        -80
+      ],
+      "id": "b707731b-89c1-4ad4-88ae-171c3707c08e",
+      "name": "Code - Tách và chuẩn hóa Comment"
+    },
+    {
+      "parameters": {
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "dedupeValue": "={{ $json.message_id }}",
+        "options": {
+          "scope": "node",
+          "historySize": 10000
+        }
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        -80
+      ],
+      "id": "dc78b49c-514b-4f4f-846b-cda4b08daa2f",
+      "name": "Remove Duplicates - Bỏ comment đã xử lý"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "YOUR_NOTION_DATABASE_ID",
+          "mode": "list",
+          "cachedResultName": "Meta Leads CRM",
+          "cachedResultUrl": "https://app.notion.com/p/YOUR_NOTION_DATABASE_ID"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Lead Key|rich_text",
+              "condition": "equals",
+              "richTextValue": "={{ $json.lead_key }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        -80
+      ],
+      "id": "1426e015-01bd-44b9-b471-7d443fda80ba",
+      "name": "Notion - Tìm Lead theo Lead Key",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6fcbd6fc-b586-4290-82b3-5c23dab250a3",
+              "leftValue": "={{ Boolean($json.id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        320,
+        -80
+      ],
+      "id": "00d2efb0-2e0a-4eab-98e1-cc3b0ab1fd0d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Nội dung gần nhất|rich_text",
+              "textContent": "={{\n  $('Remove Duplicates - Bỏ comment đã xử lý')\n    .item.json.message_text\n}}"
+            },
+            {
+              "key": "Lần tương tác cuối|date",
+              "date": "={{\n  $('Remove Duplicates - Bỏ comment đã xử lý')\n    .item.json.timestamp\n}}"
+            },
+            {
+              "key": "Page / Account ID|rich_text",
+              "textContent": "={{\n  $('Remove Duplicates - Bỏ comment đã xử lý')\n    .item.json.page_id\n}}"
+            },
+            {
+              "key": "Meta User ID|rich_text",
+              "textContent": "={{\n  $('Remove Duplicates - Bỏ comment đã xử lý')\n    .item.json.meta_user_id\n}}"
+            },
+            {
+              "key": "Post ID|rich_text",
+              "textContent": "={{\n  $('Remove Duplicates - Bỏ comment đã xử lý')\n    .item.json.post_id\n}}"
+            },
+            {
+              "key": "Kênh tương tác|select",
+              "selectValue": "Comment"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        -192
+      ],
+      "id": "19850b16-5c16-4b7f-b041-232389daeb30",
+      "name": "Notion - Cập nhật Lead cũ"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b1eb65c1-0c23-4c07-b8b5-838b435a1855",
+              "leftValue": "={{ $json.property_bot_t_m_d_ng ?? false }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        752,
+        -80
+      ],
+      "id": "306bc8e9-a2d6-4a83-b4b6-e43c96827a73",
+      "name": "IF - Bot Comment đang tạm dừng?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{\n  'https://graph.facebook.com/v25.0/'\n  + $('Remove Duplicates - Bỏ comment đã xử lý').item.json.message_id\n  + '/comments'\n}}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "Chào bạn,\nCảm ơn bạn đã quan tâm.\nBạn vui lòng nhắn tin trực tiếp vào Page để mình tư vấn chi tiết nhé."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1024,
+        48
+      ],
+      "id": "60586adc-02a8-4eb2-b943-0f6402e0bb69",
+      "name": "HTTP - Reply Comment cố định"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "YOUR_NOTION_DATABASE_ID",
+          "mode": "list",
+          "cachedResultName": "Meta Leads CRM",
+          "cachedResultUrl": "https://app.notion.com/p/YOUR_NOTION_DATABASE_ID"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Tên Lead|title",
+              "title": "={{\n  $('Remove Duplicates - Bỏ comment đã xử lý').item.json.has_user_info\n    ? $('Remove Duplicates - Bỏ comment đã xử lý').item.json.customer_name\n    : 'Khách Facebook ' +\n      $('Remove Duplicates - Bỏ comment đã xử lý').item.json.message_id.slice(-6)\n}}"
+            },
+            {
+              "key": "Lead Key|rich_text",
+              "textContent": "={{\n  $('Remove Duplicates - Bỏ comment đã xử lý').item.json.lead_key\n}}"
+            },
+            {
+              "key": "Meta User ID|rich_text",
+              "textContent": "={{\n  $('Remove Duplicates - Bỏ comment đã xử lý').item.json.meta_user_id\n}}"
+            },
+            {
+              "key": "Nguồn|select",
+              "selectValue": "=Facebook"
+            },
+            {
+              "key": "Kênh tương tác|select",
+              "selectValue": "=Comment"
+            },
+            {
+              "key": "Phân loại AI|select",
+              "selectValue": "=Chưa phân loại"
+            },
+            {
+              "key": "Mức độ nhu cầu|select",
+              "selectValue": "=Chưa xác định"
+            },
+            {
+              "key": "Giai đoạn Sale|status",
+              "statusValue": "=Lead mới"
+            },
+            {
+              "key": "Đã báo Sale?|checkbox"
+            },
+            {
+              "key": "Nội dung gần nhất|rich_text",
+              "textContent": "={{\n  $('Remove Duplicates - Bỏ comment đã xử lý').item.json.message_text\n}}"
+            },
+            {
+              "key": "Page / Account ID|rich_text",
+              "textContent": "={{\n  $('Remove Duplicates - Bỏ comment đã xử lý').item.json.page_id\n}}"
+            },
+            {
+              "key": "Post ID|rich_text",
+              "textContent": "={{\n  $('Remove Duplicates - Bỏ comment đã xử lý').item.json.post_id\n}}"
+            },
+            {
+              "key": "Lần tương tác cuối|date",
+              "date": "={{\n  $('Remove Duplicates - Bỏ comment đã xử lý').item.json.timestamp\n}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        16
+      ],
+      "id": "76cea7ed-9130-45a8-a112-58db9a1d98cb",
+      "name": "Notion - Tạo Lead mới"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule - Quét comment mỗi phút": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Lấy bài viết và comment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Lấy bài viết và comment": {
+      "main": [
+        [
+          {
+            "node": "Code - Tách và chuẩn hóa Comment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Tách và chuẩn hóa Comment": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates - Bỏ comment đã xử lý",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates - Bỏ comment đã xử lý": {
+      "main": [
+        [
+          {
+            "node": "Notion - Tìm Lead theo Lead Key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion - Tìm Lead theo Lead Key": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Notion - Cập nhật Lead cũ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notion - Tạo Lead mới",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion - Cập nhật Lead cũ": {
+      "main": [
+        [
+          {
+            "node": "IF - Bot Comment đang tạm dừng?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Bot Comment đang tạm dừng?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP - Reply Comment cố định",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion - Tạo Lead mới": {
+      "main": [
+        [
+          {
+            "node": "IF - Bot Comment đang tạm dừng?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Reply Comment cố định": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "tags": []
+}
