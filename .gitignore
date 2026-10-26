@@ -1,9 +1,9 @@
-# Chỉ cho phép file đã làm sạch (.example.json)
+# Only allow sanitized files (.example.json)
 workflows/*.json
 !workflows/*.example.json
 /*.json
 
-# Bí mật và file hệ thống
+# Secrets and system files
 .env
 *.env
 .DS_Store

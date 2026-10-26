@@ -1,20 +1,20 @@
 # Meta Lead Automation
 
-Tự động nhận tin nhắn và bình luận Facebook, dùng AI (Gemini) phân loại khách hàng,
-lưu vào Notion CRM và báo cho Sale qua Telegram.
+Automatically receives Facebook messages and comments, uses AI (Gemini) to classify customers,
+saves them to a Notion CRM, and notifies the sales team via Telegram.
 
-## Các workflow
-| # | Tên | Chức năng |
-|---|-----|-----------|
-| 02 | Meta Messenger Intake | Nhận tin nhắn Messenger, gộp tin nhắn liên tiếp, đọc ảnh, phân loại và trả lời |
-| 03 | Meta Sale Actions | Sale bấm "Nhận lead" trên Telegram, bot tạm dừng |
-| 04 | Meta Comment Polling | Quét comment mỗi phút, ghi lead, trả lời comment |
+## Workflows
+| # | Name | Function |
+|---|------|----------|
+| 02 | Meta Messenger Intake | Receives Messenger messages, merges consecutive messages, reads images, classifies the lead and replies |
+| 03 | Meta Sale Actions | Sales taps "Take lead" on Telegram, and the bot pauses |
+| 04 | Meta Comment Polling | Scans comments every minute, records leads, and replies to comments |
 
-## Công nghệ
+## Tech Stack
 n8n, Meta Graph API, Google Gemini, Notion API, Telegram Bot
 
-## Cách cài đặt
-1. Trong n8n chọn Import from file, nạp từng file trong thư mục `workflows/`.
-2. Tạo credentials: Notion, Telegram, Google Gemini, Meta Page Access Token.
-3. Thay các placeholder `YOUR_...` bằng giá trị thật của bạn.
-4. Tạo database Notion theo các cột mà workflow sử dụng.
+## Setup
+1. In n8n, choose Import from file and load each file in the `workflows/` folder.
+2. Create credentials: Notion, Telegram, Google Gemini, Meta Page Access Token.
+3. Replace the `YOUR_...` placeholders with your own values.
+4. Create the Notion database with the columns the workflows use.
